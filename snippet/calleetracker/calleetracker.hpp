@@ -7,6 +7,8 @@
 #include <string>
 #include <memory>
 
+#include "threadstaticsingleton.hpp"
+
 namespace qyvlik {
 
 struct StackFrame {
@@ -41,8 +43,7 @@ public:
     };
 
     static CalleeTracker& threadSingleton() {
-        thread_local static CalleeTracker r;
-        return r;
+        return ThreadStaticSingleton<CalleeTracker>::getThreadstaticSingleton();
     }
 
     void push(const StackFrame& sFrame) {
@@ -72,22 +73,15 @@ public:
     ~CalleeTracker()
     {}
 
-protected:
+//protected:
     CalleeTracker():
         stackFrames(new std::vector<StackFrame>())
     {}
 private:
-    bool avoid_fail:1;            // avoid thread_loacl variables destory fail
+    bool avoid_fail;            // avoid thread_loacl variables destory fail
     std::shared_ptr< std::vector<StackFrame> > stackFrames;
 };
 
 }
-
-#define QYVLIK_CALLEE_PUSH_TRACK_ \
-    qyvlik::CalleeTracker::DoDestory nil(__FILE__, __LINE__, __PRETTY_FUNCTION__); (void)nil;
-
-#define QYVLIK_CALLEE_PRINT_TRACK \
-    qyvlik::CalleeTracker::threadSingleton().printTrack();
-
 
 #endif // CALLEETRACKER_H
