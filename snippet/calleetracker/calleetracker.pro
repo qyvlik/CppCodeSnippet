@@ -12,7 +12,8 @@ SOURCES += main.cpp
 CONFIG += c++11
 
 HEADERS += \
-    calleetracker.hpp
+    calleetracker.hpp \
+    threadstaticsingleton.hpp
 
 DISTFILES += \
     readme.md
