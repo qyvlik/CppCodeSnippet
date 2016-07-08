@@ -47,7 +47,8 @@ public:
         double_value(0),
         string_value(""),
         array_value(nullptr),
-        object_value(nullptr)
+        object_value(nullptr),
+        callable_value(nullptr)
     {}
 
     ValuePrivate(bool val):
@@ -57,7 +58,8 @@ public:
         double_value(0),
         string_value(""),
         array_value(nullptr),
-        object_value(nullptr)
+        object_value(nullptr),
+        callable_value(nullptr)
     { }
 
     ValuePrivate(int val):
@@ -67,7 +69,8 @@ public:
         double_value(0),
         string_value(""),
         array_value(nullptr),
-        object_value(nullptr)
+        object_value(nullptr),
+        callable_value(nullptr)
     { }
 
     ValuePrivate(double val):
@@ -77,7 +80,8 @@ public:
         double_value(val),
         string_value(""),
         array_value(nullptr),
-        object_value(nullptr)
+        object_value(nullptr),
+        callable_value(nullptr)
     { }
 
     ValuePrivate(const std::string& val):
@@ -87,7 +91,8 @@ public:
         double_value(0),
         string_value(val),
         array_value(nullptr),
-        object_value(nullptr)
+        object_value(nullptr),
+        callable_value(nullptr)
     { }
 
     ValuePrivate(Array* val):
@@ -97,7 +102,8 @@ public:
         double_value(0),
         string_value(""),
         array_value(val),
-        object_value(nullptr)
+        object_value(nullptr),
+        callable_value(nullptr)
     { }
 
     ValuePrivate(Object* val):
@@ -107,7 +113,19 @@ public:
         double_value(0),
         string_value(""),
         array_value(nullptr),
-        object_value(val)
+        object_value(val),
+        callable_value(nullptr)
+    { }
+
+    ValuePrivate(Callable* val):
+        type(Value::Object),
+        bool_value(false),
+        int_value(0),
+        double_value(0),
+        string_value(""),
+        array_value(nullptr),
+        object_value(nullptr),
+        callable_value(val)
     { }
 
     int type;
@@ -118,7 +136,7 @@ public:
     std::string string_value;
     Array* array_value;
     Object* object_value;
-    // Function
+    Callable* callable_value;
 };
 
 //------------------------------------------------------------
@@ -157,6 +175,13 @@ Value::Value(qyvlik::Array *val):
 }
 
 Value::Value(qyvlik::Object *val):
+    GCObject(),
+    d_ptr(new ValuePrivate(val))
+{
+
+}
+
+Value::Value(Callable *val):
     GCObject(),
     d_ptr(new ValuePrivate(val))
 {
@@ -317,7 +342,6 @@ qyvlik::Object *Value::toObject()
 
     case Value::String:
 
-
     case Value::Undefined:
     default:
         return nullptr;
@@ -343,6 +367,24 @@ const qyvlik::Object *Value::toObject() const
 
     case Value::Undefined:
     default:
+        return nullptr;
+    }
+}
+
+Callable *Value::toCallable()
+{
+    if(d_ptr->type == Value::Function) {
+        return d_ptr->callable_value;
+    } else {
+        return nullptr;
+    }
+}
+
+const Callable *Value::toCallable() const
+{
+    if(d_ptr->type == Value::Function) {
+        return d_ptr->callable_value;
+    } else {
         return nullptr;
     }
 }
@@ -383,6 +425,12 @@ void Value::assign(qyvlik::Object *val)
     d_ptr->object_value = val;
 }
 
+void Value::assign(qyvlik::Callable *val)
+{
+    d_ptr->type = Value::Function;
+    d_ptr->callable_value = val;
+}
+
 void Value::print() const
 {
     std::cout << this->toString();
@@ -401,8 +449,6 @@ void Value::markChildren()
     case Value::String:
 
     case Value::Undefined:
-    default:
-        break;
 
     case Value::Array:
         if( d_ptr->array_value != nullptr)
@@ -411,6 +457,9 @@ void Value::markChildren()
     case Value::Object:
         if(d_ptr->object_value != nullptr )
             d_ptr->object_value->mark();
+        break;
+
+    default:
         break;
     }
 }
@@ -460,6 +509,13 @@ Value *ValueCreator::create(Array *val)
 }
 
 Value *ValueCreator::create(Object *val)
+{
+    Value* value = new Value(val);
+    mGC->addObject(value);
+    return value;
+}
+
+Value *ValueCreator::create(Callable *val)
 {
     Value* value = new Value(val);
     mGC->addObject(value);

@@ -14,8 +14,9 @@ protected:
     explicit Value(bool val);
     explicit Value(int val);
     explicit Value(const std::string& val);
-    explicit Value(Array* val);
-    explicit Value(Object* val);
+    explicit Value(qyvlik::Array* val);
+    explicit Value(qyvlik::Object* val);
+    explicit Value(qyvlik::Callable* val);
 public:
     enum Type {
         Undefined = -1,
@@ -43,12 +44,16 @@ public:
     qyvlik::Object*         toObject();
     const qyvlik::Object*   toObject() const;
 
+    qyvlik::Callable*       toCallable();
+    const qyvlik::Callable* toCallable() const;
+
     void assign(bool val);
     void assign(int val);
     void assign(double val);
     void assign(const std::string& val);
     void assign(qyvlik::Array* val);
     void assign(qyvlik::Object* val);
+    void assign(qyvlik::Callable* val);
 
     void print() const;
 
@@ -72,6 +77,7 @@ public:
     Value* create(const std::string& val);
     Value* create(Array* val);
     Value* create(Object* val);
+    Value* create(Callable* val);
 
     void destroy(Value* val);
 

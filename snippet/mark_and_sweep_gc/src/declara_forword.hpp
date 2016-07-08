@@ -17,6 +17,8 @@ class ObjectCreator;
 class ArrayCreator;
 class CallableCreator;
 
+typedef std::vector<Value*> Arguments;
+
 }
 
 
