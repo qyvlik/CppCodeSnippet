@@ -32,7 +32,7 @@ public:
         return mFontColor;
     }
 
-    void print(const std::string& str)  {
+    void print(const std::string& str) {
         if(mFontColor != Default) {
 #if defined (_WIN32) || defined (_WIN64)
             HANDLE hOut;

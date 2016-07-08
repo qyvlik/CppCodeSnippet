@@ -12,3 +12,5 @@ SOURCES += main.cpp
 HEADERS += \
     src/colorconsole.hpp
 
+CONFIG += c++11
+
