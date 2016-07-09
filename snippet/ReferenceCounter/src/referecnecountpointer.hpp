@@ -56,13 +56,13 @@ public:
         mCounter(other.mCounter),
         mPointer(other.mPointer)
     {
-        mCounter->increase();
+        mCounter && mCounter->increase();
     }
 
     ~ReferecneCountPointer()
     {
         // 删除之前保存的引用
-        if(this->mCounter->decrease() == 0) {
+        if(this->mCounter && this->mCounter->decrease() == 0) {
             Deleter(). destroy(mPointer);
             mPointer = nullptr;
 
@@ -73,23 +73,30 @@ public:
 
     ReferecneCountPointer& operator=(const ReferecneCountPointer& rhs)
     {
-        rhs.mCounter->increase();
+        // 证同是否必要？
+        // if(this == &rhs || this->mCounter == rhs.mCounter) return *this;
+
+        if(rhs.mCounter != nullptr ) {
+            rhs.mCounter->increase();
+        }
 
         // 删除之前保存的引用
-        if(this->mCounter->decrease() == 0) {
+        if(this->mCounter && this->mCounter->decrease() == 0) {
             Deleter().destroy(mPointer);
             mPointer = nullptr;
 
             delete mCounter;
             mCounter = nullptr;
         }
+
         mPointer = rhs.mPointer;
         mCounter = rhs.mCounter;
+
         return *this;
     }
 
     long useCount() const {
-        return mCounter->count();
+        return mCounter ? mCounter->count() : -1;
     }
 
     TypePointer operator->() const {
