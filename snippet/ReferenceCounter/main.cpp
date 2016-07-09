@@ -74,8 +74,9 @@ int main(int , char **)
         t.join();
     });
 
-    shared.cast<MyClass0>()->print();
-
+    if(shared.cast<MyClass0>()) {
+        shared.cast<MyClass0>()->print();
+    }
 
     // while(true);
     return 0;

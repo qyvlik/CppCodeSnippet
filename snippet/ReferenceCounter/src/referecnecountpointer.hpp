@@ -134,7 +134,9 @@ public:
                 : ReferecneCountPointer<Type>();
     }
 
-
+    operator bool() const {
+        return mPointer != nullptr;
+    }
 
 private:
     ReferenceCounter* mCounter;
