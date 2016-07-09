@@ -13,23 +13,37 @@ using namespace qyvlik;
 class MyClass
 {
 public:
-    ~MyClass(){
+    virtual ~MyClass(){
         std::cout << "~MyClass() [" << this << "]" << std::endl;
     }
-    void print() const {
+    virtual void print() const {
         std::cout << "print :[" << this << "]" << std::endl;
     }
 };
 
-ReferecneCountPointer<MyClass> shared(new MyClass);
+class MyClass0 : public MyClass
+{
+public:
+    virtual ~MyClass0(){
+        std::cout << "~MyClass0 [" << this << "]" << std::endl;
+    }
+    virtual void print() const {
+        std::cout << "MyClass0::print :[" << this << "]" << std::endl;
+    }
+};
+
+
+ReferecneCountPointer<MyClass> shared(new MyClass0());
 
 void get() {
 
     std::vector< ReferecneCountPointer<MyClass> > get_s;
+
     int i = 64;
     while(i > 0) {
 
         get_s.push_back(shared);
+
 
         i--;
     }
@@ -47,9 +61,7 @@ int main(int , char **)
 
     try {
         while(i > 0) {
-
             threads.push_back(std::thread(get));
-
             i--;
         }
     } catch(std::system_error e) {
@@ -61,6 +73,8 @@ int main(int , char **)
     std::for_each(threads.begin(), threads.end(), [](std::thread& t){
         t.join();
     });
+
+    shared.cast<MyClass0>()->print();
 
 
     // while(true);

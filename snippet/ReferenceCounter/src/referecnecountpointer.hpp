@@ -41,22 +41,42 @@ public:
 template<typename T, typename Deleter = DefaultDeleter<T> >
 class ReferecneCountPointer
 {
-public:
     static_assert(!std::is_pointer<T>::value,        "NOT SUPPORT POINTER");
     static_assert(!std::is_reference<T>::value,      "NOT SUPPORT REFERENCE");
 
+public:
     typedef T* TypePointer;
+
+    ReferecneCountPointer():
+        mCounter(nullptr),
+        mPointer(nullptr)
+    {}
 
     ReferecneCountPointer(TypePointer ptr):
         mCounter(new ReferenceCounter),
         mPointer(ptr)
-    { }
+    {}
 
     ReferecneCountPointer(const ReferecneCountPointer& other):
         mCounter(other.mCounter),
         mPointer(other.mPointer)
     {
         mCounter && mCounter->increase();
+    }
+
+    ReferecneCountPointer(ReferenceCounter* count, TypePointer pointer):
+        mCounter(count),
+        mPointer(pointer)
+    {
+        mCounter && mCounter->increase();
+    }
+
+    ReferecneCountPointer(ReferecneCountPointer&& other):
+        mCounter(other.mCounter),
+        mPointer(other.mPointer)
+    {
+        other.mCounter = nullptr;
+        other.mPointer = nullptr;
     }
 
     ~ReferecneCountPointer()
@@ -95,13 +115,26 @@ public:
         return *this;
     }
 
-    long useCount() const {
+    long useCount() const
+    {
         return mCounter ? mCounter->count() : -1;
     }
 
-    TypePointer operator->() const {
+    TypePointer operator->() const
+    {
         return mPointer;
     }
+
+    template<typename Type>
+    ReferecneCountPointer<Type> cast()
+    {
+        Type* cast_pointer = dynamic_cast<Type*>(mPointer);
+        return cast_pointer
+                ? ReferecneCountPointer<Type>(mCounter, cast_pointer)
+                : ReferecneCountPointer<Type>();
+    }
+
+
 
 private:
     ReferenceCounter* mCounter;
