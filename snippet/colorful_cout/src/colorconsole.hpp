@@ -24,24 +24,19 @@ public:
         mFontColor(Default)
     {}
 
-    void setFontColor(ConsoleFontColor fontColor) {
-        mFontColor = fontColor;
-    }
-
     ConsoleFontColor fontColor() const {
         return mFontColor;
     }
 
-    void print(const std::string& str) {
+    template<typename T>
+    void print(const T& content, ConsoleFontColor fontColor = Default) {
+        mFontColor = fontColor;
         if(mFontColor != Default) {
 #if defined (_WIN32) || defined (_WIN64)
             HANDLE hOut;
 
             //  获取输出流的句柄
             hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-            //            SetConsoleTextAttribute(hOut,
-            //                                    FOREGROUND_GREEN |      // 前景色_绿色
-            //                                    FOREGROUND_INTENSITY ); // 前景色_加强
 
             switch(mFontColor)
             {
@@ -80,7 +75,7 @@ public:
                 break;
             }
 #endif
-            std::cout << str ;
+            std::cout << content ;
 
 #if defined (_WIN32) || defined (_WIN64)
             SetConsoleTextAttribute(hOut, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
@@ -89,7 +84,7 @@ public:
 #endif
             mFontColor = Default;
         } else {
-            std::cout << str ;
+            std::cout << content ;
         }
     }
 
