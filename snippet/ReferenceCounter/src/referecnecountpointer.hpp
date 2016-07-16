@@ -125,6 +125,10 @@ public:
         return mPointer;
     }
 
+    TypePointer get() const {
+        return mPointer;
+    }
+
     template<typename Type>
     ReferecneCountPointer<Type> cast()
     {
