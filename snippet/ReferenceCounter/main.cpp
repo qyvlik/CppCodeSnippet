@@ -53,11 +53,83 @@ void get() {
     std::this_thread::sleep_for (std::chrono::seconds(5));
 }
 
+template<typename T>
+class Sharedable
+{
+public:
+    class Pointer
+    {
+        friend class Sharedable<T>;
+    public:
+        inline T* getPointer() const {
+            return mPtr;
+        }
+    protected:
+        Pointer():
+            mPtr(nullptr)
+        {}
+        Pointer(T* ptr):
+            mPtr(ptr)
+        {}
+        T* mPtr;
+    };
+    typedef ReferecneCountPointer<Pointer> SharedPointer;
+
+    Sharedable():
+        mPointer(new Pointer)
+    {}
+
+    Sharedable(T* ptr):
+        mPointer(new Pointer(ptr))
+    {}
+
+    virtual ~Sharedable()
+    {}
+
+    inline SharedPointer getShared() const {
+        return mPointer;
+    }
+
+    inline void onDestroy() {
+        mPointer->mPtr = nullptr;
+    }
+
+    inline void onInitialized(T* ptr) {
+        mPointer->mPtr = ptr;
+    }
+
+protected:
+    SharedPointer mPointer;
+};
+
+class Class : protected Sharedable<Class>
+{
+public:
+    Class():
+       Sharedable<Class>(this)
+    {
+    }
+    ~Class()
+    {
+        onDestroy();
+        std::cout << "~Class" << std::endl;
+    }
+
+    using Sharedable<Class>::SharedPointer;
+    using Sharedable<Class>::getShared;
+
+    void print() const{
+        std::cout << "Class[" << this << "]" << std::endl;
+    }
+};
+
 void test();
+void test1();
 
 int main(int , char **)
 {
-    test();
+    // test();
+    test1();
     return 0;
 }
 
@@ -86,6 +158,26 @@ void test()
     }
 
     // while(true);
+}
+
+void test1()
+{
+    std::cout << "sizeof(Class::SharedPointer)" << sizeof(Class::SharedPointer) << std::endl;
+    std::cout << "sizeof(Class)" << sizeof(Class) << std::endl;
+
+    Class::SharedPointer sharedPointer;
+
+    {
+        Class* obj = new Class;
+        sharedPointer = obj->getShared();
+
+        std::cout << "sharedPointer : " << sharedPointer->getPointer() << std::endl;               // not nullptr
+        sharedPointer->getPointer()->print();
+
+        delete obj;
+    }
+
+    std::cout << "sharedPointer : " << sharedPointer->getPointer() << std::endl;                   // nullptr
 }
 
 
