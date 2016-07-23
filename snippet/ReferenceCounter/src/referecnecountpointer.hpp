@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include <iostream>
+#include <cassert>
 
 namespace qyvlik {
 
@@ -13,15 +14,15 @@ public:
         mCount(1)
     { }
 
-    long increase() {
+    inline long increase() {
         return ++mCount;
     }
 
-    long decrease() {
+    inline long decrease() {
         return --mCount;
     }
 
-    long count() const {
+    inline long count() const {
         return mCount;
     }
 
@@ -64,19 +65,19 @@ public:
         mCounter && mCounter->increase();
     }
 
-    ReferecneCountPointer(ReferenceCounter* count, TypePointer pointer):
-        mCounter(count),
-        mPointer(pointer)
-    {
-        mCounter && mCounter->increase();
-    }
-
     ReferecneCountPointer(ReferecneCountPointer&& other):
         mCounter(other.mCounter),
         mPointer(other.mPointer)
     {
         other.mCounter = nullptr;
         other.mPointer = nullptr;
+    }
+
+    ReferecneCountPointer(ReferenceCounter* count, TypePointer pointer):
+        mCounter(count),
+        mPointer(pointer)
+    {
+        mCounter && mCounter->increase();
     }
 
     ~ReferecneCountPointer()
@@ -115,17 +116,18 @@ public:
         return *this;
     }
 
-    long useCount() const
+    inline long useCount() const
     {
         return mCounter ? mCounter->count() : -1;
     }
 
-    TypePointer operator->() const
+    inline TypePointer operator->() const
     {
+        assert(mPointer != nullptr);
         return mPointer;
     }
 
-    TypePointer get() const {
+    inline TypePointer get() const {
         return mPointer;
     }
 
@@ -138,7 +140,7 @@ public:
                 : ReferecneCountPointer<Type>();
     }
 
-    operator bool() const {
+    inline operator bool() const {
         return mPointer != nullptr;
     }
 

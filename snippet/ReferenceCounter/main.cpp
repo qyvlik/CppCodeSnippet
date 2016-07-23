@@ -44,7 +44,6 @@ void get() {
 
         get_s.push_back(shared);
 
-
         i--;
     }
 
@@ -54,7 +53,15 @@ void get() {
     std::this_thread::sleep_for (std::chrono::seconds(5));
 }
 
+void test();
+
 int main(int , char **)
+{
+    test();
+    return 0;
+}
+
+void test()
 {
     int i = 872;            // 872 Resource temporarily unavailable RtlWerpReportException
     std::vector<std::thread> threads;
@@ -79,6 +86,6 @@ int main(int , char **)
     }
 
     // while(true);
-    return 0;
 }
+
 
