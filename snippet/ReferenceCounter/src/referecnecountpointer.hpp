@@ -7,28 +7,6 @@
 
 namespace qyvlik {
 
-class ReferenceCounter
-{
-public:
-    ReferenceCounter():
-        mCount(1)
-    { }
-
-    inline long increase() {
-        return ++mCount;
-    }
-
-    inline long decrease() {
-        return --mCount;
-    }
-
-    inline long count() const {
-        return mCount;
-    }
-
-private:
-    std::atomic<long> mCount;
-};
 
 template<typename T>
 struct DefaultDeleter
@@ -54,7 +32,7 @@ public:
     {}
 
     ReferecneCountPointer(TypePointer ptr):
-        mCounter(new ReferenceCounter),
+        mCounter(new std::atomic<long>(1)),
         mPointer(ptr)
     {}
 
@@ -62,7 +40,7 @@ public:
         mCounter(other.mCounter),
         mPointer(other.mPointer)
     {
-        mCounter && mCounter->increase();
+        mCounter && ++(*mCounter);
     }
 
     ReferecneCountPointer(ReferecneCountPointer&& other):
@@ -73,17 +51,17 @@ public:
         other.mPointer = nullptr;
     }
 
-    ReferecneCountPointer(ReferenceCounter* count, TypePointer pointer):
+    ReferecneCountPointer(std::atomic<long>* count, TypePointer pointer):
         mCounter(count),
         mPointer(pointer)
     {
-        mCounter && mCounter->increase();
+        mCounter && ++(*mCounter);
     }
 
     ~ReferecneCountPointer()
     {
         // 删除之前保存的引用
-        if(this->mCounter && this->mCounter->decrease() == 0) {
+        if(this->mCounter && --(*mCounter) == 0) {
             Deleter(). destroy(mPointer);
             mPointer = nullptr;
 
@@ -98,11 +76,11 @@ public:
         // if(this == &rhs || this->mCounter == rhs.mCounter) return *this;
 
         if(rhs.mCounter != nullptr ) {
-            rhs.mCounter->increase();
+            ++(*(rhs.mCounter));
         }
 
         // 删除之前保存的引用
-        if(this->mCounter && this->mCounter->decrease() == 0) {
+        if(this->mCounter && --(*mCounter) == 0) {
             Deleter().destroy(mPointer);
             mPointer = nullptr;
 
@@ -118,7 +96,7 @@ public:
 
     inline long useCount() const
     {
-        return mCounter ? mCounter->count() : -1;
+        return mCounter ? (long)(*mCounter) : -1;
     }
 
     inline TypePointer operator->() const
@@ -145,8 +123,59 @@ public:
     }
 
 private:
-    ReferenceCounter* mCounter;
+    std::atomic<long> *mCounter;
     TypePointer mPointer;
+};
+
+
+template<typename Type>
+class SafeShareable
+{
+public:
+    class PointerGetter
+    {
+        friend class SafeShareable<Type>;
+        friend class ReferecneCountPointer<PointerGetter>;
+    public:
+        inline Type* getRawPointer() const {
+            return mPtr;
+        }
+    protected:
+        PointerGetter():
+            mPtr(nullptr)
+        {}
+        PointerGetter(Type* ptr):
+            mPtr(ptr)
+        {}
+        Type* mPtr;
+    };
+
+public:
+    typedef ReferecneCountPointer<PointerGetter> ShareablePointerGetter;
+
+    SafeShareable(Type* ptr):
+        mPointerGetter(new PointerGetter(ptr))
+    {
+    }
+
+    virtual ~SafeShareable()
+    {}
+
+    //@interface
+    inline ReferecneCountPointer<PointerGetter> getPointerGetter() const {
+        return mPointerGetter;
+    }
+
+    inline void onDestroy() {
+        mPointerGetter->mPtr = nullptr;
+    }
+
+    inline void onInitialized(Type* ptr) {
+        mPointerGetter->mPtr = ptr;
+    }
+
+protected:
+    ReferecneCountPointer<PointerGetter> mPointerGetter;
 };
 
 

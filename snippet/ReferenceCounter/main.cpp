@@ -53,60 +53,11 @@ void get() {
     std::this_thread::sleep_for (std::chrono::seconds(5));
 }
 
-template<typename T>
-class Sharedable
-{
-public:
-    class Pointer
-    {
-        friend class Sharedable<T>;
-    public:
-        inline T* getPointer() const {
-            return mPtr;
-        }
-    protected:
-        Pointer():
-            mPtr(nullptr)
-        {}
-        Pointer(T* ptr):
-            mPtr(ptr)
-        {}
-        T* mPtr;
-    };
-    typedef ReferecneCountPointer<Pointer> SharedPointer;
-
-    Sharedable():
-        mPointer(new Pointer)
-    {}
-
-    Sharedable(T* ptr):
-        mPointer(new Pointer(ptr))
-    {}
-
-    virtual ~Sharedable()
-    {}
-
-    inline SharedPointer getShared() const {
-        return mPointer;
-    }
-
-    inline void onDestroy() {
-        mPointer->mPtr = nullptr;
-    }
-
-    inline void onInitialized(T* ptr) {
-        mPointer->mPtr = ptr;
-    }
-
-protected:
-    SharedPointer mPointer;
-};
-
-class Class : protected Sharedable<Class>
+class Class : protected qyvlik::SafeShareable<Class>
 {
 public:
     Class():
-       Sharedable<Class>(this)
+       qyvlik::SafeShareable<Class>(this)
     {
     }
     ~Class()
@@ -115,8 +66,8 @@ public:
         std::cout << "~Class" << std::endl;
     }
 
-    using Sharedable<Class>::SharedPointer;
-    using Sharedable<Class>::getShared;
+    using qyvlik::SafeShareable<Class>::ShareablePointerGetter;
+    using qyvlik::SafeShareable<Class>::getPointerGetter;
 
     void print() const{
         std::cout << "Class[" << this << "]" << std::endl;
@@ -162,22 +113,18 @@ void test()
 
 void test1()
 {
-    std::cout << "sizeof(Class::SharedPointer)" << sizeof(Class::SharedPointer) << std::endl;
-    std::cout << "sizeof(Class)" << sizeof(Class) << std::endl;
 
-    Class::SharedPointer sharedPointer;
+    Class::ShareablePointerGetter sharedPointerGetter;
 
     {
         Class* obj = new Class;
-        sharedPointer = obj->getShared();
+        sharedPointerGetter = obj->getPointerGetter();
 
-        std::cout << "sharedPointer : " << sharedPointer->getPointer() << std::endl;               // not nullptr
-        sharedPointer->getPointer()->print();
+        std::cout << "sharedPointerGetter getRawPointer: " << sharedPointerGetter->getRawPointer() << std::endl;               // not nullptr
+        sharedPointerGetter->getRawPointer()->print();
 
         delete obj;
     }
 
-    std::cout << "sharedPointer : " << sharedPointer->getPointer() << std::endl;                   // nullptr
+    std::cout << "sharedPointerGetter getRawPointer: " << sharedPointerGetter->getRawPointer() << std::endl;                   //  nullptr
 }
-
-
