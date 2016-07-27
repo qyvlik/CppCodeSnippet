@@ -2,6 +2,9 @@
 
 #include "src/trigger.h"
 
+#include <list>
+#include <vector>
+
 using namespace qyvlik;
 using namespace qyvlik::trigger;
 
@@ -47,9 +50,9 @@ public:
     {
         mHandle = new OnHandle(
                     [this](OnHappened *){
-                        this->mConnectionManager->disconnect(mObject->destroy, mHandle);
-                        this->mObject = nullptr;
-                    });
+                this->mConnectionManager->disconnect(mObject->destroy, mHandle);
+                this->mObject = nullptr;
+    });
     }
 
     ObjectHandle(ConnectionManager* cm, Object* obj):
@@ -58,9 +61,9 @@ public:
     {
         mHandle = new OnHandle(
                     [this](OnHappened *){
-                        this->mConnectionManager->disconnect(mObject->destroy, mHandle);
-                        this->mObject = nullptr;
-                    });
+                this->mConnectionManager->disconnect(mObject->destroy, mHandle);
+                this->mObject = nullptr;
+    });
         cm->connect(mObject->destroy, mHandle);
     }
 
@@ -102,11 +105,11 @@ int main()
 
         OnHandle* handle = new OnHandle (
                     [&](OnHappened *happened) {
-                        if(happened->type() == 0) std::cout << "["<< happened << "] destroy"  << std::endl;
+                if(happened->type() == 0) std::cout << "["<< happened << "] destroy"  << std::endl;
 
-                        cManager.disconnect(obj.destroy, handle);
-                        delete handle;
-                    });
+                cManager.disconnect(obj.destroy, handle);
+                delete handle;
+    });
 
         cManager.connect(obj.destroy, handle);
 

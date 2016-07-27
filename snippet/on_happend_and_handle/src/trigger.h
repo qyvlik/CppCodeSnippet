@@ -39,7 +39,7 @@ public:
         mHandle(happened);
     }
 
-    void resetHandle(const Handle& handle) {
+    void setHandle(const Handle& handle) {
         mHandle = handle;
     }
 
