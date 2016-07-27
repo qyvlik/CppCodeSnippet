@@ -62,7 +62,7 @@ public:
     {
         // 删除之前保存的引用
         if(this->mCounter && --(*mCounter) == 0) {
-            Deleter(). destroy(mPointer);
+            Deleter().destroy(mPointer);
             mPointer = nullptr;
 
             delete mCounter;
@@ -72,8 +72,7 @@ public:
 
     ReferecneCountPointer& operator=(const ReferecneCountPointer& rhs)
     {
-        // 证同是否必要？
-        // if(this == &rhs || this->mCounter == rhs.mCounter) return *this;
+        if(this->mCounter == rhs.mCounter) return *this;
 
         if(rhs.mCounter != nullptr ) {
             ++(*(rhs.mCounter));
@@ -94,6 +93,66 @@ public:
         return *this;
     }
 
+    inline bool operator ==(const ReferecneCountPointer& rhs)
+    {
+        return this->mPointer == rhs.mPointer;
+    }
+
+    inline bool operator ==(const TypePointer rhs)
+    {
+        return this->mPointer == rhs;
+    }
+
+    inline bool operator!=(const ReferecneCountPointer& rhs)
+    {
+        return this->mPointer != rhs.mPointer;
+    }
+
+    inline bool operator !=(const TypePointer rhs)
+    {
+        return this->mPointer != rhs;
+    }
+
+    inline bool operator<(const ReferecneCountPointer& rhs)
+    {
+        return this->mPointer < rhs.mPointer;
+    }
+
+    inline bool operator<(const TypePointer rhs)
+    {
+        return this->mPointer < rhs;
+    }
+
+    inline bool operator<=(const ReferecneCountPointer& rhs)
+    {
+        return this->mPointer <= rhs.mPointer;
+    }
+
+    inline bool operator<=(const TypePointer rhs)
+    {
+        return this->mPointer <= rhs;
+    }
+
+    inline bool operator>(const ReferecneCountPointer& rhs)
+    {
+        return this->mPointer > rhs.mPointer;
+    }
+
+    inline bool operator>(const TypePointer rhs)
+    {
+        return this->mPointer > rhs;
+    }
+
+    inline bool operator>=(const ReferecneCountPointer& rhs)
+    {
+        return this->mPointer >= rhs.mPointer;
+    }
+
+    inline bool operator>=(const TypePointer rhs)
+    {
+        return this->mPointer >= rhs;
+    }
+
     inline long useCount() const
     {
         return mCounter ? (long)(*mCounter) : -1;
@@ -105,7 +164,8 @@ public:
         return mPointer;
     }
 
-    inline TypePointer get() const {
+    inline TypePointer get() const
+    {
         return mPointer;
     }
 
@@ -118,7 +178,8 @@ public:
                 : ReferecneCountPointer<Type>();
     }
 
-    inline operator bool() const {
+    inline operator bool() const
+    {
         return mPointer != nullptr;
     }
 
@@ -127,56 +188,6 @@ private:
     TypePointer mPointer;
 };
 
-
-template<typename Type>
-class SafeShareable
-{
-public:
-    class PointerGetter
-    {
-        friend class SafeShareable<Type>;
-        friend class ReferecneCountPointer<PointerGetter>;
-    public:
-        inline Type* getRawPointer() const {
-            return mPtr;
-        }
-    protected:
-        PointerGetter():
-            mPtr(nullptr)
-        {}
-        PointerGetter(Type* ptr):
-            mPtr(ptr)
-        {}
-        Type* mPtr;
-    };
-
-public:
-    typedef ReferecneCountPointer<PointerGetter> ShareablePointerGetter;
-
-    SafeShareable(Type* ptr):
-        mPointerGetter(new PointerGetter(ptr))
-    {
-    }
-
-    virtual ~SafeShareable()
-    {}
-
-    //@interface
-    inline ReferecneCountPointer<PointerGetter> getPointerGetter() const {
-        return mPointerGetter;
-    }
-
-    inline void onDestroy() {
-        mPointerGetter->mPtr = nullptr;
-    }
-
-    inline void onInitialized(Type* ptr) {
-        mPointerGetter->mPtr = ptr;
-    }
-
-protected:
-    ReferecneCountPointer<PointerGetter> mPointerGetter;
-};
 
 
 } // namespace qyvlik
