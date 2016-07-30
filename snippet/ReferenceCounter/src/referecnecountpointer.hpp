@@ -8,51 +8,63 @@
 namespace qyvlik {
 
 
-template<typename T>
-struct DefaultDeleter
+namespace base
+{
+class ReferecneCountPointer
 {
 public:
-    void destroy(T* obj) {
-        delete obj;
-    }
+    ReferecneCountPointer(std::atomic<long> * counter):
+        mCounter(counter)
+    {}
+protected:
+    std::atomic<long> *mCounter;
 };
+}
 
-template<typename T, typename Deleter = DefaultDeleter<T> >
-class ReferecneCountPointer
+template<typename T>
+class ReferecneCountPointer : public base::ReferecneCountPointer
 {
     static_assert(!std::is_pointer<T>::value,        "NOT SUPPORT POINTER");
     static_assert(!std::is_reference<T>::value,      "NOT SUPPORT REFERENCE");
-
+    friend class CastHelper;
 public:
     typedef T* TypePointer;
 
+    friend class Helper;
+    struct Helper
+    {
+        static std::atomic<long> *getCounter(ReferecneCountPointer& p) {
+            return p.mCounter;
+        }
+    };
+
     ReferecneCountPointer():
-        mCounter(nullptr),
+        base::ReferecneCountPointer(nullptr),
         mPointer(nullptr)
     {}
 
     ReferecneCountPointer(TypePointer ptr):
-        mCounter(new std::atomic<long>(1)),
+        base::ReferecneCountPointer(new std::atomic<long>(1)),
         mPointer(ptr)
     {}
 
     ReferecneCountPointer(const ReferecneCountPointer& other):
-        mCounter(other.mCounter),
+        base::ReferecneCountPointer(other.mCounter),
         mPointer(other.mPointer)
     {
         mCounter && ++(*mCounter);
     }
 
     ReferecneCountPointer(ReferecneCountPointer&& other):
-        mCounter(other.mCounter),
+        base::ReferecneCountPointer(other.mCounter),
         mPointer(other.mPointer)
     {
         other.mCounter = nullptr;
         other.mPointer = nullptr;
     }
 
-    ReferecneCountPointer(std::atomic<long>* count, TypePointer pointer):
-        mCounter(count),
+    ReferecneCountPointer(std::atomic<long>* counter, TypePointer pointer):
+        base::ReferecneCountPointer(counter),
         mPointer(pointer)
     {
         mCounter && ++(*mCounter);
@@ -62,7 +74,7 @@ public:
     {
         // 删除之前保存的引用
         if(this->mCounter && --(*mCounter) == 0) {
-            Deleter().destroy(mPointer);
+            delete mPointer;
             mPointer = nullptr;
 
             delete mCounter;
@@ -80,7 +92,7 @@ public:
 
         // 删除之前保存的引用
         if(this->mCounter && --(*mCounter) == 0) {
-            Deleter().destroy(mPointer);
+            delete mPointer;
             mPointer = nullptr;
 
             delete mCounter;
@@ -174,7 +186,7 @@ public:
     {
         Type* cast_pointer = dynamic_cast<Type*>(mPointer);
         return cast_pointer
-                ? ReferecneCountPointer<Type>(mCounter, cast_pointer)
+                ? ReferecneCountPointer<Type>(this->mCounter, cast_pointer)
                 : ReferecneCountPointer<Type>();
     }
 
@@ -184,10 +196,8 @@ public:
     }
 
 private:
-    std::atomic<long> *mCounter;
     TypePointer mPointer;
 };
-
 
 
 } // namespace qyvlik

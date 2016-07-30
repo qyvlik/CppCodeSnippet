@@ -13,6 +13,7 @@ CONFIG += c++11
 
 HEADERS += \
     src/referecnecountpointer.hpp \
-    src/alias.hpp \
     test.hpp \
-    test1.hpp
+    test1.hpp \
+    src/reference.hpp \
+    test2.hpp

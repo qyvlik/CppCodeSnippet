@@ -1,5 +1,5 @@
-#ifndef QYVLIK_ALIAS_H
-#define QYVLIK_ALIAS_H
+#ifndef QYVLIK_REFERENCE_H
+#define QYVLIK_REFERENCE_H
 
 #include "referecnecountpointer.hpp"
 
@@ -8,66 +8,69 @@
 namespace qyvlik {
 
 template<typename Type>
-class Alias
+class Reference
 {
+public:
     struct PointerGetter{
-        friend class Alias<Type>;
         PointerGetter(Type* ptr):
             mPtr(ptr)
         {}
         Type* mPtr;
     };
-public:
-    Alias():
+    Reference():
         mPointerGetter(new PointerGetter(nullptr))
     {}
 
-    Alias(Type* ptr):
+    Reference(Type* ptr):
         mPointerGetter(new PointerGetter(ptr))
     {}
 
-    Alias(Alias&& alias) :
+    Reference(Reference&& alias) :
+        mPointerGetter(std::move(alias.mPointerGetter))
+    {}
+
+    Reference(const Reference& alias) :
         mPointerGetter(alias.mPointerGetter)
     {}
 
-    Alias(const Alias& alias) :
-        mPointerGetter(alias.mPointerGetter)
+    Reference(ReferecneCountPointer<PointerGetter> rhs):
+        mPointerGetter(rhs)
     {}
 
-    Alias& operator=(const Alias& rhs)
+    Reference& operator=(const Reference& rhs)
     {
         mPointerGetter = rhs.mPointerGetter;
         return *this;
     }
 
-    inline bool operator==(const Alias& rhs)
+    inline bool operator==(const Reference& rhs)
     {
-        return mPointerGetter == rhs.mPointerGetter;
+        return mPointerGetter->mPtr == rhs.mPointerGetter->mPtr;
     }
 
-    inline bool operator!=(const Alias& rhs)
+    inline bool operator!=(const Reference& rhs)
     {
-        return mPointerGetter != rhs.mPointerGetter;
+        return mPointerGetter->mPtr != rhs.mPointerGetter->mPtr;
     }
 
-    inline bool operator<(const Alias& rhs)
+    inline bool operator<(const Reference& rhs)
     {
-        return mPointerGetter < rhs.mPointerGetter;
+        return mPointerGetter->mPtr < rhs.mPointerGetter->mPtr;
     }
 
-    inline bool operator<=(const Alias& rhs)
+    inline bool operator<=(const Reference& rhs)
     {
-        return mPointerGetter <= rhs.mPointerGetter;
+        return mPointerGetter->mPtr <= rhs.mPointerGetter->mPtr;
     }
 
-    inline bool operator>(const Alias& rhs)
+    inline bool operator>(const Reference& rhs)
     {
-        return mPointerGetter > rhs.mPointerGetter;
+        return mPointerGetter->mPtr > rhs.mPointerGetter->mPtr;
     }
 
-    inline bool operator>=(const Alias& rhs)
+    inline bool operator>=(const Reference& rhs)
     {
-        return mPointerGetter >= rhs.mPointerGetter;
+        return mPointerGetter->mPtr >= rhs.mPointerGetter->mPtr;
     }
 
     inline void onPointerDestroy()
@@ -101,6 +104,16 @@ public:
         return mPointerGetter->mPtr != nullptr;
     }
 
+    template<typename T>
+    Reference<T> cast()
+    {
+        typedef typename Reference<T>::PointerGetter T_PointerGetter;
+        T* cast_pointer = dynamic_cast<T*>(mPointerGetter->mPtr);
+        auto d_ptr = ReferecneCountPointer<T_PointerGetter>( ReferecneCountPointer<PointerGetter>::Helper::getCounter(mPointerGetter),
+                                                             new T_PointerGetter(cast_pointer) );
+        return Reference<T>(d_ptr);
+    }
+
 private:
     ReferecneCountPointer<PointerGetter> mPointerGetter;
 };
@@ -117,14 +130,14 @@ public:
     {}
 
     template<typename ... Args>
-    Alias<ObjectType> create(Args... args) {
+    Reference<ObjectType> create(Args... args) {
         ObjectType* object = new ObjectType(std::forward(args)...);
-        Alias<ObjectType> alias(object);
+        Reference<ObjectType> alias(object);
         addObject(alias);
         return alias;
     }
 
-   bool destroy(Alias<ObjectType>& alias) {
+    bool destroy(Reference<ObjectType>& alias) {
         if(removeObject(alias)) {
             destroyObject(alias.pointer());
             return true;
@@ -133,8 +146,8 @@ public:
     }
 
 protected:
-    virtual void addObject(Alias<ObjectType>& alias) = 0;
-    virtual bool removeObject(Alias<ObjectType>& alias) = 0;
+    virtual void addObject(const Reference<ObjectType>& alias) = 0;
+    virtual bool removeObject(Reference<ObjectType>& alias) = 0;
     virtual void destroyObject(ObjectType* object) {
         delete object;
     }
@@ -148,12 +161,12 @@ public:
     ObjectCreator() = default;
 
 protected:
-    void addObject(Alias<ObjectType> &alias) override
+    void addObject(const Reference<ObjectType> &alias) override
     {
-        mObjects.insert(std::pair<ObjectType*, Alias<ObjectType>>(alias.pointer(), alias));
+        mObjects.insert(std::pair<ObjectType*, Reference<ObjectType>>(alias.pointer(), alias));
     }
 
-    bool removeObject(Alias<ObjectType> &alias) override
+    bool removeObject(Reference<ObjectType> &alias) override
     {
         auto find = mObjects.find(alias.pointer());
         auto end  = mObjects.end();
@@ -166,9 +179,9 @@ protected:
     }
 
 private:
-    std::map<ObjectType*, Alias<ObjectType>> mObjects;
+    std::map<ObjectType*, Reference<ObjectType>> mObjects;
 };
 
 } // namespace qyvlik
 
-#endif // QYVLIK_ALIAS_H
+#endif // QYVLIK_REFERENCE_H
