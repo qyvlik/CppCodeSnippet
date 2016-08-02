@@ -9,31 +9,20 @@ using namespace qyvlik;
 class Object
 {
 public:
-    virtual ~Object()
-    {}
-    virtual void print() const {
+    void print() const {
         std::cout << "Object[" << this << "]" << std::endl;
     }
 };
 
-class ObjectA : public Object
-{
-public:
-    ObjectA() = default;
-    virtual void print() const {
-        std::cout << "ObjectA[" << this << "]" << std::endl;
-    }
-};
 
 void test1()
 {
-    ObjectCreator<ObjectA> creator;
+    ObjectCreator<Object> creator;
 
-    Reference<ObjectA> a;
+    Reference<Object> a;
     {
         a = creator.create();
-        auto b = a.cast<Object>();
-        b->print();
+        a->print();
         creator.destroy(a);
     }
     std::cout << "pointer: " << a.pointer() << std::endl;   // nullptr

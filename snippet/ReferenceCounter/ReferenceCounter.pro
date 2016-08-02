@@ -7,7 +7,8 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    src/value.cpp
 
 CONFIG += c++11
 
@@ -16,4 +17,5 @@ HEADERS += \
     test.hpp \
     test1.hpp \
     src/reference.hpp \
-    test2.hpp
+    test2.hpp \
+    src/value.hpp

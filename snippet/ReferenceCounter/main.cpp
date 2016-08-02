@@ -2,9 +2,10 @@
 
 #include "test.hpp"
 #include "test1.hpp"
+#include "test2.hpp"
 
 int main(int , char **)
 {
-    test1();
+    test2();
     return 0;
 }

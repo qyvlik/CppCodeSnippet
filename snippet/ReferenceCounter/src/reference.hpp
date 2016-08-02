@@ -11,12 +11,13 @@ template<typename Type>
 class Reference
 {
 public:
-    struct PointerGetter{
+    struct PointerGetter {
         PointerGetter(Type* ptr):
             mPtr(ptr)
-        {}
+        { }
         Type* mPtr;
     };
+
     Reference():
         mPointerGetter(new PointerGetter(nullptr))
     {}
@@ -104,15 +105,12 @@ public:
         return mPointerGetter->mPtr != nullptr;
     }
 
-    template<typename T>
-    Reference<T> cast()
-    {
-        typedef typename Reference<T>::PointerGetter T_PointerGetter;
-        T* cast_pointer = dynamic_cast<T*>(mPointerGetter->mPtr);
-        auto d_ptr = ReferecneCountPointer<T_PointerGetter>( ReferecneCountPointer<PointerGetter>::Helper::getCounter(mPointerGetter),
-                                                             new T_PointerGetter(cast_pointer) );
-        return Reference<T>(d_ptr);
+    friend std::ostream& operator<<(std::ostream& os, const Reference& r) {
+        os << "Reference [" << r.mPointerGetter->mPtr << "]";
+        return os;
     }
+
+    //! TODO cast
 
 private:
     ReferecneCountPointer<PointerGetter> mPointerGetter;
@@ -131,7 +129,7 @@ public:
 
     template<typename ... Args>
     Reference<ObjectType> create(Args... args) {
-        ObjectType* object = new ObjectType(std::forward(args)...);
+        ObjectType* object = new ObjectType(std::move(args)...);
         Reference<ObjectType> alias(object);
         addObject(alias);
         return alias;
