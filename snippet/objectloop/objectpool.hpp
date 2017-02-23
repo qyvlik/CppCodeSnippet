@@ -15,6 +15,10 @@ public:
     {}
     virtual void init() = 0;
     virtual void clear() = 0;
+    virtual void reset() {
+        clear();
+        init();
+    }
 };
 
 template<typename T>

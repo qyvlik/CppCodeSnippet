@@ -17,7 +17,7 @@ public:
 
     void init() override
     {
-        a = 1;
+        a = 0;
     }
 
     void clear() override
@@ -32,12 +32,15 @@ private:
 
 int main()
 {
-    qyvlik::ObjectPool<MyObject> MyObjectPool;
-    MyObjectPool.fillLoop();
 
-    std::shared_ptr<MyObject> one = MyObjectPool.getOne();
+    std::cout << sizeof(MyObject) << std::endl;
 
-    one->print();
+//    qyvlik::ObjectPool<MyObject> MyObjectPool;
+//    MyObjectPool.fillLoop();
+
+//    std::shared_ptr<MyObject> one = MyObjectPool.getOne();
+
+//    one->print();
 
     return 0;
 }

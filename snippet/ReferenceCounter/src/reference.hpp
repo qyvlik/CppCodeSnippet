@@ -128,8 +128,8 @@ public:
     {}
 
     template<typename ... Args>
-    Reference<ObjectType> create(Args... args) {
-        ObjectType* object = new ObjectType(std::move(args)...);
+    Reference<ObjectType> create(Args&&... args) {
+        ObjectType* object = new ObjectType(std::forward<Args>(args)...);
         Reference<ObjectType> alias(object);
         addObject(alias);
         return alias;

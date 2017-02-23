@@ -1,5 +1,8 @@
 #include <iostream>
 
+#include <thread>
+#include <QObject>
+
 #include "src/engine/virtual_machine/virtualmachine.h"
 #include "src/engine/context/virtualmachinecontext.h"
 #include "src/domain/array.h"
@@ -28,23 +31,29 @@ int f(int a) {
     }
 }
 
-//class gc_object
-//{
-//public:
-//    virtual ~gc_object(){}
-//    bool marked;
-//    bool busy;
-//    bool thread;
-//    bool resuable;
-//};
+class gc_object
+{
+public:
+    virtual ~gc_object(){}
+    bool marked:1;
+    bool busy:1;
+    bool thread:1;
+    bool resuable:1;
+    bool eden:1;
+    bool survivor:1;
+    bool tenured:1;
+    bool a3:1;
+};
 
 int main()
 {
     //test_3();
-   std::cout << f(10) << std::endl;
-    // test_4();
+//   std::cout << f(10) << std::endl;
+     test_4();
 
-//    std::cout << sizeof(gc_object) <<std::endl;
+
+    //std::cout << std::this_thread::get_id();
+    //std::cout << sizeof(gc_object) <<std::endl;
 
     return 0;
 }
@@ -386,5 +395,5 @@ void test_4()
 
 
 
-    // gc.collect(true);
+//    gc.collect(true);
 }

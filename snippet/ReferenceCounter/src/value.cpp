@@ -2,11 +2,22 @@
 
 namespace qyvlik {
 
+Value::~Value()
+{}
+
 void Value::execute(const Arguments &args, Reference<Value> result, Reference<Value> error) {
     (void)args;
     (void)result;
     (void)error;
 }
+
+void Value::assign(bool value) {}
+
+void Value::assign(int value) {}
+
+void Value::assign(double value) {}
+
+void Value::assign(const std::string &value) {}
 
 
 //--------------------------------NullValue------------------------------
@@ -66,6 +77,26 @@ Reference<Value> NullValue::at(const std::string &key) const
 {
     (void)key;
     return null();
+}
+
+void NullValue::assign(bool value)
+{
+    (void)value;
+}
+
+void NullValue::assign(int value)
+{
+    (void)value;
+}
+
+void NullValue::assign(double value)
+{
+    (void)value;
+}
+
+void NullValue::assign(const std::string &value)
+{
+    (void)value;
 }
 
 Reference<Value> NullValue::null()
@@ -156,6 +187,26 @@ Reference<Value> BooleanValue::at(const std::string &key) const
     return NullValue::null();
 }
 
+void BooleanValue::assign(bool value)
+{
+    mData = value;
+}
+
+void BooleanValue::assign(int value)
+{
+    mData = value != 0;
+}
+
+void BooleanValue::assign(double value)
+{
+    mData = value != 0;
+}
+
+void BooleanValue::assign(const std::string &value)
+{
+    mData = !value.empty();
+}
+
 //--------------------------------BooleanValue------------------------------
 
 
@@ -221,6 +272,26 @@ Reference<Value> IntegerValue::at(const std::string &key) const
 {
     (void)key;
     return NullValue::null();
+}
+
+void IntegerValue::assign(bool value)
+{
+    mData = value;
+}
+
+void IntegerValue::assign(int value)
+{
+    mData = value;
+}
+
+void IntegerValue::assign(double value)
+{
+    mData = value;
+}
+
+void IntegerValue::assign(const std::string &value)
+{
+    (void)value;
 }
 
 
@@ -290,6 +361,28 @@ Reference<Value> DoubleValue::at(const std::string &key) const
     return NullValue::null();
 }
 
+void DoubleValue::assign(bool value)
+{
+    mData = value;
+}
+
+void DoubleValue::assign(int value)
+{
+    mData = value;
+
+}
+
+void DoubleValue::assign(double value)
+{
+    mData = value;
+
+}
+
+void DoubleValue::assign(const std::string &value)
+{
+    (void)value;
+}
+
 
 //--------------------------------DoubleValue------------------------------
 
@@ -357,6 +450,26 @@ Reference<Value> StringValue::at(const std::string &key) const
     return NullValue::null();
 }
 
+void StringValue::assign(bool value)
+{
+    mData = value ? "true" : false;
+}
+
+void StringValue::assign(int value)
+{
+    mData = std::to_string(value);
+}
+
+void StringValue::assign(double value)
+{
+    mData = std::to_string(value);
+}
+
+void StringValue::assign(const std::string &value)
+{
+    mData = value;
+}
+
 //--------------------------------ObjectValue------------------------------
 
 ObjectValue::ObjectValue()
@@ -406,7 +519,6 @@ Reference<ObjectValue> ObjectValue::toObject() const
 
 bool ObjectValue::equals(Value *value) const
 {
-    // TODO
     if(this == value) return true;
     return false;
 }
@@ -479,7 +591,6 @@ Reference<ObjectValue> ArrayValue::toObject() const
 
 bool ArrayValue::equals(Value *value) const
 {
-    // TODO
     if(this == value) return true;
     return false;
 }
@@ -546,7 +657,6 @@ Reference<ObjectValue> FunctionValue::toObject() const
 
 bool FunctionValue::equals(Value *value) const
 {
-    // TODO
     if(this == value) return true;
     return false;
 }

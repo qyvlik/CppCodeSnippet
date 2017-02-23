@@ -18,21 +18,21 @@ int main()
 }
 
 void a() {
-    QYVLIK_CALLEE_PUSH_TRACK_;
+    QYVLIK_CALLEE_PUSH_TRACK;
     b();
 }
 
 void b() {
-    QYVLIK_CALLEE_PUSH_TRACK_;
+    QYVLIK_CALLEE_PUSH_TRACK;
     c();
 }
 
 void c() {
-    QYVLIK_CALLEE_PUSH_TRACK_;
+    QYVLIK_CALLEE_PUSH_TRACK;
     d();
 }
 
 void d() {
-    QYVLIK_CALLEE_PUSH_TRACK_;
+    QYVLIK_CALLEE_PUSH_TRACK;
     throw qyvlik::Throwable(0, "Throwalbe ");
 }

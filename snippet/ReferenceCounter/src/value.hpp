@@ -47,8 +47,7 @@ public:
     };
 
     Value() = default;
-    virtual ~Value()
-    {}
+    virtual ~Value();
     virtual int type() const = 0;
     virtual bool toBoolean() const = 0;
     virtual int toInteger() const = 0;
@@ -61,6 +60,12 @@ public:
     virtual Reference<Value> at(int index) const = 0;
     virtual Reference<Value> at(const std::string& key) const = 0;
     virtual void execute(const Arguments& args, Reference<Value> result, Reference<Value> error);
+
+    virtual void assign(bool value);
+    virtual void assign(int value);
+    virtual void assign(double value);
+    virtual void assign(const std::string& value);
+
     //    virtual Value* clone() const = 0;
 };
 
@@ -79,9 +84,14 @@ public:
     bool equals(const Reference<Value> &value) const override;
     Reference<Value> at(int index) const override;
     Reference<Value> at(const std::string &key) const override;
+    void assign(bool value) override;
+    void assign(int value) override;
+    void assign(double value) override;
+    void assign(const std::string &value) override;
     static Reference<Value> null();
     static Reference<ArrayValue> nullArray();
     static Reference<ObjectValue> nullObject();
+
 private:
     static NullValue mNull;
     static ArrayValue mNullArray;
@@ -103,6 +113,10 @@ public:
     bool equals(const Reference<Value> &value) const override;
     Reference<Value> at(int index) const override;
     Reference<Value> at(const std::string &key) const override;
+    void assign(bool value) override;
+    void assign(int value) override;
+    void assign(double value) override;
+    void assign(const std::string &value) override;
 private:
     bool mData;
 };
@@ -122,6 +136,10 @@ public:
     bool equals(const Reference<Value> &value) const override;
     Reference<Value> at(int index) const override;
     Reference<Value> at(const std::string &key) const override;
+    void assign(bool value) override;
+    void assign(int value) override;
+    void assign(double value) override;
+    void assign(const std::string &value) override;
 private:
     int mData;
 };
@@ -141,6 +159,10 @@ public:
     bool equals(const Reference<Value> &value) const override;
     Reference<Value> at(int index) const override;
     Reference<Value> at(const std::string &key) const override;
+    void assign(bool value) override;
+    void assign(int value) override;
+    void assign(double value) override;
+    void assign(const std::string &value) override;
 private:
     double mData;
 };
@@ -160,6 +182,10 @@ public:
     bool equals(const Reference<Value> &value) const override;
     Reference<Value> at(int index) const override;
     Reference<Value> at(const std::string &key) const override;
+    void assign(bool value) override;
+    void assign(int value) override;
+    void assign(double value) override;
+    void assign(const std::string &value) override;
 private:
     std::string mData;
 };
